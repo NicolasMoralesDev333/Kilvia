@@ -1,0 +1,119 @@
+<div class="home-page">
+  <section class="hero">
+    <div class="hero__inner">
+      <div class="hero__copy">
+        <p class="eyebrow eyebrow--light">Planificación activa · Datos demo</p>
+        <h1>Tus viajes tienen kilómetros por aprovechar.</h1>
+        <p>Kilvia encuentra cargas compatibles con las rutas que ya tenés programadas.</p>
+        <div class="hero__actions">
+          <button type="button" class="button button--primary" (click)="openTripForm()">
+            <app-k-icon name="plus" [size]="19" />Registrar viaje
+          </button>
+          <a class="button button--ghost" routerLink="/opportunities">Ver oportunidades<app-k-icon name="arrow-up-right" [size]="18" /></a>
+        </div>
+      </div>
+
+      @if (featured(); as opportunity) {
+        <div class="corridor" aria-label="Viaje activo de Buenos Aires a Mendoza con carga compatible hasta San Luis">
+          <div class="corridor__head">
+            <span>Próxima salida · {{ opportunity.trip.dateShort }}</span>
+            <strong>{{ opportunity.trip.id }}</strong>
+          </div>
+          <div class="corridor__cities">
+            <div><small>ORIGEN</small><strong>{{ opportunity.trip.origin.city }}</strong></div>
+            <div><small>DESTINO</small><strong>{{ opportunity.trip.destination.city }}</strong></div>
+          </div>
+          <div class="corridor__line">
+            <span></span><i class="corridor__start"></i><i class="corridor__match"></i><i class="corridor__end"></i>
+            <b>San Luis</b>
+          </div>
+          <div class="corridor__foot">
+            <div><span>Capacidad libre</span><strong>{{ tons(opportunity.trip.capacityFreeTons) }} t</strong></div>
+            <div><span>Matches detectados</span><strong>{{ opportunity.trip.matchCount }}</strong></div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="operation-line" aria-label="Resumen operacional">
+      @for (metric of metrics(); track metric.label) {
+        <div><strong>{{ metric.value }}</strong><span>{{ metric.label }}</span>@if (metric.context) { <small>{{ metric.context }}</small> }</div>
+      }
+    </div>
+  </section>
+
+  <main class="workspace">
+    @if (featured(); as opportunity) {
+      <section aria-labelledby="featured-title">
+        <header class="section-heading">
+          <div><p class="eyebrow">Prioridad operativa</p><h2 id="featured-title">Una carga encaja especialmente bien</h2></div>
+          <a routerLink="/opportunities">Ver las {{ totalOpportunities() }} oportunidades<app-k-icon name="chevron-right" [size]="18" /></a>
+        </header>
+
+        <article class="opportunity-feature">
+          <div class="opportunity-feature__route">
+            <div class="route-kicker"><span>MEJOR COINCIDENCIA</span><span>{{ opportunity.load.pickupDate }} · {{ opportunity.load.pickupTime }}</span></div>
+            <div class="route-title">
+              <div><small>CARGA DESDE</small><strong>{{ opportunity.load.origin.city }}</strong></div>
+              <i>→</i>
+              <div><small>HASTA</small><strong>{{ opportunity.load.destination.city }}</strong></div>
+            </div>
+            <div class="route-axis" aria-hidden="true"><span></span><b></b><i></i></div>
+            <p>Comparte <strong>{{ opportunity.metrics.usableKm }} km</strong> con tu viaje a {{ opportunity.trip.destination.city }} y requiere un desvío bajo.</p>
+          </div>
+          <div class="opportunity-feature__decision">
+            <app-match-score [score]="opportunity.compatibility" [label]="opportunity.level" />
+            <dl>
+              <div><dt>Desvío</dt><dd>+{{ opportunity.metrics.detourKm }} km</dd></div>
+              <div><dt>Tiempo extra</dt><dd>+{{ opportunity.metrics.additionalMinutes }} min</dd></div>
+              <div><dt>Capacidad</dt><dd>{{ opportunity.capacity.utilizationPercent }}% utilizada</dd></div>
+            </dl>
+            <a [routerLink]="['/opportunities', opportunity.id]">Evaluar match<app-k-icon name="chevron-right" [size]="19" /></a>
+          </div>
+        </article>
+      </section>
+    }
+
+    <section class="trips-section" aria-labelledby="trips-title">
+      <header class="section-heading section-heading--compact">
+        <div><p class="eyebrow">Corredores en agenda</p><h2 id="trips-title">Viajes programados</h2></div>
+        <span>Capacidad y matching</span>
+      </header>
+      <div class="trip-list">
+        @for (trip of trips(); track trip.id) {
+          <article>
+            <div class="trip-route"><span aria-hidden="true"></span><div><small>{{ trip.id }} · {{ trip.dateShort }}</small><strong>{{ trip.origin.city }} → {{ trip.destination.city }}</strong></div></div>
+            <div><small>Vehículo</small><strong>{{ trip.vehicle }}</strong></div>
+            <div><small>Capacidad libre</small><strong>{{ tons(trip.capacityFreeTons) }} t</strong></div>
+            <p [class.is-positive]="trip.status === 'matched'" [class.is-warning]="trip.status === 'pending'">
+              @if (trip.status === 'matched') { {{ trip.matchCount }} oportunidades }
+              @else if (trip.status === 'pending') { Revisión pendiente }
+              @else { Sin match todavía }
+            </p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <footer>Información ficticia para fines de prototipo.</footer>
+  </main>
+
+  @if (formOpen()) {
+    <div class="sheet-backdrop" (click)="closeTripForm()" aria-hidden="true"></div>
+    <section class="trip-sheet" role="dialog" aria-modal="true" aria-labelledby="trip-form-title">
+      <header><div><p class="eyebrow">Nuevo corredor</p><h2 id="trip-form-title">Registrar viaje</h2></div><button type="button" (click)="closeTripForm()" aria-label="Cerrar formulario"><app-k-icon name="close" /></button></header>
+      @if (formSaved()) {
+        <div class="success-message" role="status"><app-k-icon name="check" />Viaje registrado en modo demo.</div>
+      } @else {
+        <form [formGroup]="tripForm" (ngSubmit)="submitTrip()" novalidate>
+          <label>Origen<input type="text" formControlName="origin" autocomplete="address-level2" placeholder="Ej. Buenos Aires" />@if (tripForm.controls.origin.touched && tripForm.controls.origin.invalid) { <small>Ingresá un origen.</small> }</label>
+          <label>Destino<input type="text" formControlName="destination" autocomplete="address-level2" placeholder="Ej. Mendoza" />@if (tripForm.controls.destination.touched && tripForm.controls.destination.invalid) { <small>Ingresá un destino.</small> }</label>
+          <label>Fecha de salida<input type="date" formControlName="departureDate" />@if (tripForm.controls.departureDate.touched && tripForm.controls.departureDate.invalid) { <small>Seleccioná una fecha.</small> }</label>
+          <label>Vehículo<select formControlName="vehicleId"><option value="">Seleccionar vehículo</option>@for (vehicle of vehicles(); track vehicle.id) { <option [value]="vehicle.id">{{ vehicle.label }}</option> }</select>@if (tripForm.controls.vehicleId.touched && tripForm.controls.vehicleId.invalid) { <small>Seleccioná un vehículo.</small> }</label>
+          <label>Capacidad libre (t)<input type="number" min="0.1" step="0.1" formControlName="freeCapacityTons" />@if (tripForm.controls.freeCapacityTons.touched && tripForm.controls.freeCapacityTons.invalid) { <small>Ingresá una capacidad válida.</small> }</label>
+          <button class="button button--primary" type="submit">Guardar viaje</button>
+        </form>
+      }
+    </section>
+  }
+</div>

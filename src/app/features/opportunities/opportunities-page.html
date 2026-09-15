@@ -1,0 +1,38 @@
+<div class="opportunities-page">
+  <header class="page-intro">
+    <div>
+      <p class="eyebrow">Matching logístico · Datos demo</p>
+      <h1>Oportunidades sobre tus rutas activas.</h1>
+      <p>Cargas compatibles ordenadas por impacto operativo, capacidad y desvío.</p>
+    </div>
+    <div class="intro-count"><strong>{{ opportunities().length }}</strong><span>matches<br />para evaluar</span></div>
+  </header>
+
+  <main class="opportunity-workspace">
+    <div class="list-heading"><span>Ordenadas por compatibilidad</span><span>Actualizadas para la planificación demo</span></div>
+    <div class="opportunity-list">
+      @for (item of opportunities(); track item.id; let position = $index) {
+        <article [class.is-featured]="position === 0">
+          <div class="opportunity-index"><span>0{{ position + 1 }}</span>@if (position === 0) { <strong>Recomendada</strong> }</div>
+          <div class="opportunity-route">
+            <small>CARGA {{ item.load.id }}</small>
+            <h2>{{ item.load.origin.city }} <i>→</i> {{ item.load.destination.city }}</h2>
+            <p>Sobre viaje {{ item.trip.id }} · {{ item.trip.origin.city }} → {{ item.trip.destination.city }}</p>
+          </div>
+          <div class="opportunity-facts">
+            <div><small>Salida</small><strong>{{ item.load.pickupDate }}</strong><span>{{ item.load.pickupTime }}</span></div>
+            <div><small>Carga</small><strong>{{ tons(item.load.weightTons) }} t</strong><span>{{ item.load.requiredVehicle }}</span></div>
+            <div><small>Desvío</small><strong>+{{ item.metrics.detourKm }} km</strong><span>+{{ item.metrics.additionalMinutes }} min</span></div>
+          </div>
+          <app-match-score [score]="item.compatibility" [label]="item.level" [compact]="true" />
+          <a [routerLink]="['/opportunities', item.id]" [attr.aria-label]="'Evaluar match de ' + item.load.origin.city + ' a ' + item.load.destination.city">
+            <span>Evaluar</span><app-k-icon name="chevron-right" [size]="19" />
+          </a>
+        </article>
+      } @empty {
+        <p class="empty-state">No hay oportunidades compatibles en este momento.</p>
+      }
+    </div>
+    <p class="demo-note">Compatibilidad, distancias y tiempos ficticios para fines de prototipo.</p>
+  </main>
+</div>

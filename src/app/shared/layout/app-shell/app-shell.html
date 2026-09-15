@@ -1,0 +1,55 @@
+<div class="app-shell">
+  <header class="kilvia-header">
+    <div class="kilvia-header__inner">
+      <a class="brand" routerLink="/home" aria-label="Kilvia, ir al inicio">
+        <span class="brand__mark" aria-hidden="true"><i></i><b></b><em></em></span>
+        <span class="brand__name">Kilvia</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Navegación principal">
+        @for (item of desktopNav; track item.label) {
+          @if (item.link) {
+            <a [routerLink]="item.link" routerLinkActive="is-active"><span>{{ item.label }}</span></a>
+          } @else {
+            <span class="desktop-nav__pending" [attr.aria-label]="item.label + ', disponible próximamente'">{{ item.label }}</span>
+          }
+        }
+      </nav>
+
+      <div class="account">
+        <span><small>Empresa demo</small><strong>Transporte Andino</strong></span>
+        <span class="account__avatar" aria-hidden="true">MM</span>
+      </div>
+    </div>
+  </header>
+
+  <main><router-outlet /></main>
+
+  @if (moreOpen()) {
+    <section class="more-panel" aria-label="Más opciones">
+      <button type="button"><app-k-icon name="warehouse" [size]="19" />Vehículos <small>Próximamente</small></button>
+      <button type="button"><app-k-icon name="drivers" [size]="19" />Choferes <small>Próximamente</small></button>
+      <button type="button"><app-k-icon name="settings" [size]="19" />Configuración <small>Próximamente</small></button>
+    </section>
+  }
+
+  <nav class="mobile-nav" aria-label="Navegación principal móvil">
+    @for (item of mobileNav; track item.label) {
+      @if (item.link) {
+        <a [routerLink]="item.link" routerLinkActive="is-active">
+          <app-k-icon [name]="item.icon" [size]="21" />
+          <span>{{ item.label }}</span>
+        </a>
+      } @else {
+        <button type="button" aria-disabled="true" [attr.aria-label]="item.label + ', disponible próximamente'">
+          <app-k-icon [name]="item.icon" [size]="21" />
+          <span>{{ item.label }}</span>
+        </button>
+      }
+    }
+    <button type="button" (click)="toggleMore()" [attr.aria-expanded]="moreOpen()" aria-label="Más opciones">
+      <app-k-icon [name]="moreOpen() ? 'close' : 'more'" [size]="21" />
+      <span>Más</span>
+    </button>
+  </nav>
+</div>

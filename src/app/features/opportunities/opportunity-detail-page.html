@@ -1,0 +1,71 @@
+@if (opportunity(); as match) {
+  <div class="detail-page">
+    <header class="detail-intro">
+      <nav aria-label="Migas de pan"><a routerLink="/opportunities"><app-k-icon name="arrow-left" [size]="17" />Oportunidades</a><span>/</span><span>Detalle del match</span></nav>
+      <div class="detail-intro__title">
+        <div><p class="eyebrow">Carga recomendada · Datos demo</p><h1>{{ match.load.origin.city }} <i>→</i> {{ match.load.destination.city }}</h1><p>Compatible con el viaje <strong>{{ match.trip.origin.city }} → {{ match.trip.destination.city }}</strong></p></div>
+        <button class="button button--primary" type="button" (click)="openOffer()">Enviar oferta</button>
+      </div>
+    </header>
+
+    <main class="detail-workspace">
+      <section class="map-decision" aria-label="Evaluación geográfica del match">
+        <app-route-map [opportunity]="match" />
+        <aside class="match-decision">
+          <p class="eyebrow eyebrow--green">Compatibilidad calculada</p>
+          <app-match-score [score]="match.compatibility" [label]="match.level" />
+          <div class="route-pair">
+            <div><span>Viaje programado</span><strong><i class="blue"></i>{{ match.trip.origin.city }} → {{ match.trip.destination.city }}</strong></div>
+            <div><span>Carga compatible</span><strong><i class="green"></i>{{ match.load.origin.city }} → {{ match.load.destination.city }}</strong></div>
+          </div>
+          <dl class="impact-metrics">
+            <div><dt>Desvío</dt><dd>+{{ match.metrics.detourKm }} km</dd><small>Impacto bajo</small></div>
+            <div><dt>Tiempo adicional</dt><dd>+{{ match.metrics.additionalMinutes }} min</dd><small>Estimado</small></div>
+            <div><dt>Tramo aprovechado</dt><dd>{{ match.metrics.usableKm }} km</dd><small>Con carga</small></div>
+          </dl>
+          <button class="decision-cta" type="button" (click)="openOffer()">Evaluar una oferta<app-k-icon name="chevron-right" [size]="19" /></button>
+        </aside>
+      </section>
+
+      <section class="analysis-grid">
+        <div class="capacity-panel"><app-capacity-fit [capacity]="match.capacity" /></div>
+        <aside class="criteria-panel"><app-match-criteria [criteria]="match.criteria" /></aside>
+      </section>
+
+      <section class="operation-detail" aria-labelledby="load-title">
+        <header><div><p class="eyebrow">Carga {{ match.load.id }}</p><h2 id="load-title">Información para decidir</h2></div><span>Lista para evaluar</span></header>
+        <div class="operation-detail__body">
+          <section><small>RECORRIDO</small><h3>{{ match.load.origin.city }} <i>→</i> {{ match.load.destination.city }}</h3><p>{{ match.load.pickupDate }} · {{ match.load.pickupTime }}</p></section>
+          <section><small>CARGA</small><h3>{{ match.load.cargoType }}</h3><dl><div><dt>Peso</dt><dd>{{ tons(match.load.weightTons) }} t</dd></div><div><dt>Volumen</dt><dd>{{ match.load.volumeM3 }} m³</dd></div></dl></section>
+          <section><small>REQUERIMIENTOS</small><h3>{{ match.load.requiredVehicle }}</h3><p>{{ match.load.restrictions }}</p></section>
+          <section class="trip-reference"><small>VIAJE {{ match.trip.id }}</small><h3>{{ match.trip.origin.city }} → {{ match.trip.destination.city }}</h3><p>{{ match.trip.dateShort }} · {{ match.trip.timeWindow }} · {{ match.trip.vehicle }}</p></section>
+        </div>
+      </section>
+
+      <section class="decision-zone" id="decision" aria-labelledby="decision-title">
+        <div><p class="eyebrow">Decisión operativa</p><h2 id="decision-title">¿Conviene sumar esta carga?</h2><p>Las condiciones y el precio final se acuerdan entre las partes.</p></div>
+        <div class="decision-zone__actions"><button class="button button--primary" type="button" (click)="openOffer()">Enviar oferta</button><button class="button button--secondary" type="button" (click)="chooseDecision('saved')">Guardar</button><button class="button button--text" type="button" (click)="chooseDecision('discarded')">Descartar</button></div>
+        @if (decision()) { <p class="decision-feedback" role="status"><app-k-icon name="check" [size]="17" />@if (decision() === 'saved') { Oportunidad guardada en esta sesión. } @else { Oportunidad descartada en esta sesión. }</p> }
+      </section>
+    </main>
+
+    @if (offerOpen()) {
+      <div class="sheet-backdrop" (click)="closeOffer()" aria-hidden="true"></div>
+      <section class="offer-sheet" role="dialog" aria-modal="true" aria-labelledby="offer-title">
+        <header><div><p class="eyebrow">Match {{ match.compatibility }}%</p><h2 id="offer-title">Enviar oferta</h2></div><button type="button" (click)="closeOffer()" aria-label="Cerrar formulario"><app-k-icon name="close" /></button></header>
+        @if (offerSaved()) {
+          <div class="success-message" role="status"><app-k-icon name="check" />Oferta enviada en modo demo.</div>
+        } @else {
+          <p class="offer-route">{{ match.load.origin.city }} → {{ match.load.destination.city }}</p>
+          <form [formGroup]="offerForm" (ngSubmit)="submitOffer(match.id)" novalidate>
+            <label>Monto propuesto (ARS)<input type="number" min="1" step="1000" formControlName="amount" />@if (offerForm.controls.amount.touched && offerForm.controls.amount.invalid) { <small>Ingresá un monto válido.</small> }</label>
+            <label>Mensaje<textarea rows="5" formControlName="message" placeholder="Indicá condiciones y disponibilidad"></textarea>@if (offerForm.controls.message.touched && offerForm.controls.message.invalid) { <small>Escribí un mensaje de al menos 10 caracteres.</small> }</label>
+            <button class="button button--primary" type="submit">Confirmar oferta</button>
+          </form>
+        }
+      </section>
+    }
+  </div>
+} @else {
+  <main class="not-found"><h1>No encontramos este match.</h1><a routerLink="/opportunities">Volver a oportunidades</a></main>
+}

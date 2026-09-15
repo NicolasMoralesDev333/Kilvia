@@ -1,0 +1,24 @@
+.app-shell{min-height:100vh;padding-bottom:4.75rem;background:var(--kilvia-canvas)}
+.kilvia-header{height:4rem;color:#fff;background:var(--kilvia-navy)}
+.kilvia-header__inner{display:flex;height:100%;align-items:center;justify-content:space-between;padding:0 1rem}
+.brand{display:flex;align-items:center;gap:.65rem;color:#fff;text-decoration:none}
+.brand__name{font-size:1.15rem;font-weight:800;letter-spacing:-.035em}
+.brand__mark{display:block;width:2rem;height:2rem;position:relative;background:var(--kilvia-blue)}
+.brand__mark i,.brand__mark b,.brand__mark em{position:absolute;display:block;background:#fff;transform-origin:left center}
+.brand__mark i{width:2px;height:1.15rem;top:.43rem;left:.58rem}
+.brand__mark b{width:.9rem;height:2px;top:1rem;left:.6rem;transform:rotate(-40deg)}
+.brand__mark em{width:.9rem;height:2px;top:1rem;left:.6rem;transform:rotate(40deg)}
+.desktop-nav,.account{display:none}
+.mobile-nav{position:fixed;z-index:40;inset:auto 0 0;display:grid;height:4.75rem;grid-template-columns:repeat(5,1fr);border-top:1px solid #d7e0ea;background:rgba(255,255,255,.98);box-shadow:0 -8px 24px rgba(11,29,58,.08)}
+.mobile-nav a,.mobile-nav button{display:flex;position:relative;min-width:0;min-height:3.5rem;align-items:center;justify-content:center;flex-direction:column;gap:.25rem;border:0;color:#667085;background:transparent;font:inherit;text-decoration:none}
+.mobile-nav span{max-width:100%;overflow:hidden;font-size:.625rem;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.mobile-nav a.is-active{color:var(--kilvia-blue)}
+.mobile-nav a.is-active:before{content:'';position:absolute;top:0;width:2.25rem;height:3px;background:var(--kilvia-blue)}
+.mobile-nav button[aria-disabled=true]{opacity:.72}
+.more-panel{position:fixed;z-index:35;right:.75rem;bottom:5.35rem;left:.75rem;padding:.5rem;border:1px solid #d7e0ea;background:#fff;box-shadow:0 18px 45px rgba(11,29,58,.18)}
+.more-panel button{display:grid;width:100%;grid-template-columns:1.5rem 1fr auto;align-items:center;gap:.75rem;min-height:3.25rem;border:0;border-bottom:1px solid #e4eaf0;color:var(--kilvia-navy);background:#fff;text-align:left;font:inherit;font-weight:700}
+.more-panel button:last-child{border:0}.more-panel small{color:#98a2b3;font-size:.6875rem;font-weight:600}
+@media (min-width:768px){
+  .app-shell{padding-bottom:0}.kilvia-header{height:4.75rem;position:sticky;z-index:40;top:0}.kilvia-header__inner{max-width:90rem;margin:auto;padding:0 2rem}.brand__mark{width:2.2rem;height:2.2rem}.desktop-nav{display:flex;height:100%;align-items:stretch;gap:.25rem}.desktop-nav a,.desktop-nav__pending{display:flex;position:relative;align-items:center;padding:0 .65rem;color:#aebed0;font-size:.76rem;font-weight:700;text-decoration:none}.desktop-nav a:after{content:'';position:absolute;right:.65rem;bottom:0;left:.65rem;height:3px;background:transparent}.desktop-nav a:hover,.desktop-nav a.is-active{color:#fff}.desktop-nav a.is-active:after{background:var(--kilvia-blue)}.desktop-nav__pending{opacity:.55}.account{display:flex;align-items:center;gap:.7rem}.account>span:first-child{display:none;flex-direction:column;text-align:right}.account small{color:#7f95ae;font-size:.625rem}.account strong{font-size:.72rem}.account__avatar{display:grid;width:2.25rem;height:2.25rem;place-items:center;border:1px solid #3c536e;color:#fff;font-size:.7rem;font-weight:800}.mobile-nav,.more-panel{display:none}
+}
+@media (min-width:1100px){.desktop-nav{gap:.65rem}.desktop-nav a,.desktop-nav__pending{padding-inline:.85rem}.account>span:first-child{display:flex}}
