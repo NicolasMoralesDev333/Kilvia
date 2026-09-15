@@ -21,11 +21,16 @@
 html { min-width: 320px; background: var(--kilvia-canvas); scroll-behavior: smooth; }
 body { min-width: 320px; min-height: 100vh; margin: 0; overflow-x: clip; background: var(--kilvia-canvas); }
 button, a { -webkit-tap-highlight-color: transparent; }
+button:active, a:active { opacity: .82; }
 button, input, select, textarea { font-family: inherit; }
 button { cursor: pointer; }
 button[aria-disabled='true'] { cursor: default; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(30, 107, 255, .35); outline-offset: 3px; }
 ::selection { color: #fff; background: #1e6bff; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
 
 .sr-only {
   position: absolute;

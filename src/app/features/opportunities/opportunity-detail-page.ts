@@ -41,6 +41,10 @@ export class OpportunityDetailPage {
     this.offerOpen.set(true);
   }
 
+  protected scrollToDecision(): void {
+    document.getElementById('decision')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   protected closeOffer(): void {
     this.offerOpen.set(false);
   }

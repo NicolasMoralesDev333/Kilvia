@@ -3,8 +3,8 @@
     <header class="detail-intro">
       <nav aria-label="Migas de pan"><a routerLink="/opportunities"><app-k-icon name="arrow-left" [size]="17" />Oportunidades</a><span>/</span><span>Detalle del match</span></nav>
       <div class="detail-intro__title">
-        <div><p class="eyebrow">Carga recomendada · Datos demo</p><h1>{{ match.load.origin.city }} <i>→</i> {{ match.load.destination.city }}</h1><p>Compatible con el viaje <strong>{{ match.trip.origin.city }} → {{ match.trip.destination.city }}</strong></p></div>
-        <button class="button button--primary" type="button" (click)="openOffer()">Enviar oferta</button>
+        <div><p class="eyebrow">Carga recomendada <span class="demo-meta">Datos demo</span></p><h1>{{ match.load.origin.city }} <i>→</i> {{ match.load.destination.city }}</h1><p>Compatible con el viaje <strong>{{ match.trip.origin.city }} → {{ match.trip.destination.city }}</strong></p></div>
+        <button class="button button--review" type="button" (click)="scrollToDecision()" aria-controls="decision">Revisar condiciones</button>
       </div>
     </header>
 
@@ -23,7 +23,7 @@
             <div><dt>Tiempo adicional</dt><dd>+{{ match.metrics.additionalMinutes }} min</dd><small>Estimado</small></div>
             <div><dt>Tramo aprovechado</dt><dd>{{ match.metrics.usableKm }} km</dd><small>Con carga</small></div>
           </dl>
-          <button class="decision-cta" type="button" (click)="openOffer()">Evaluar una oferta<app-k-icon name="chevron-right" [size]="19" /></button>
+          <button class="decision-cta" type="button" (click)="scrollToDecision()" aria-controls="decision">Continuar evaluación<app-k-icon name="chevron-right" [size]="19" /></button>
         </aside>
       </section>
 

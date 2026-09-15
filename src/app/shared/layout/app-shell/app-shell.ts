@@ -4,6 +4,7 @@ import { IconName, KIcon } from '../../components/k-icon/k-icon';
 
 interface NavItem {
   readonly label: string;
+  readonly mobileLabel?: string;
   readonly icon: IconName;
   readonly link?: string;
 }
@@ -28,7 +29,7 @@ export class AppShell {
   protected readonly mobileNav: readonly NavItem[] = [
     { label: 'Inicio', icon: 'home', link: '/home' },
     { label: 'Viajes', icon: 'truck' },
-    { label: 'Oportunidades', icon: 'route', link: '/opportunities' },
+    { label: 'Oportunidades', mobileLabel: 'Oportun.', icon: 'route', link: '/opportunities' },
     { label: 'Operaciones', icon: 'briefcase' },
   ];
 

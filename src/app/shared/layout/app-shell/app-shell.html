@@ -38,12 +38,12 @@
       @if (item.link) {
         <a [routerLink]="item.link" routerLinkActive="is-active">
           <app-k-icon [name]="item.icon" [size]="21" />
-          <span>{{ item.label }}</span>
+          <span>{{ item.mobileLabel ?? item.label }}</span>
         </a>
       } @else {
         <button type="button" aria-disabled="true" [attr.aria-label]="item.label + ', disponible próximamente'">
           <app-k-icon [name]="item.icon" [size]="21" />
-          <span>{{ item.label }}</span>
+          <span>{{ item.mobileLabel ?? item.label }}</span>
         </button>
       }
     }
