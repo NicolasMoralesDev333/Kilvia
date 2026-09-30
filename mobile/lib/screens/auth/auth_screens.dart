@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/app_theme.dart';
 import '../widgets/screen_components.dart';
@@ -10,38 +11,46 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: AppTheme.navy,
     body: SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.local_shipping_outlined,
-              color: Colors.white,
-              size: 58,
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'kilvia',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/kilvia_route.svg',
+                    width: 72,
+                    height: 72,
+                    semanticsLabel: 'Marca Kilvia',
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'kilvia',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'Logística conectada',
+                    style: TextStyle(color: Color(0xFFCFD8E6)),
+                  ),
+                  const SizedBox(height: 36),
+                  SizedBox(
+                    width: 220,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Navigator.pushReplacementNamed(context, '/login'),
+                      child: const Text('Continuar'),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Text(
-              'Logística conectada',
-              style: TextStyle(color: Color(0xFFCFD8E6)),
-            ),
-            const SizedBox(height: 36),
-            SizedBox(
-              width: 220,
-              child: ElevatedButton(
-                onPressed: () =>
-                    Navigator.pushReplacementNamed(context, '/login'),
-                child: const Text('Continuar'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     ),

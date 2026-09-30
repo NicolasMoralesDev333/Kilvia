@@ -30,6 +30,26 @@ void main() {
     expect(find.text('Continuar'), findsOneWidget);
   });
 
+  testWidgets('el splash tolera un viewport inicial mínimo', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1, 1);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/splash',
+        routes: kilviaRoutes,
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('captura la home en vista mobile', (WidgetTester tester) async {
     await tester.pumpWidget(buildMobileApp('/home'));
     await tester.pumpAndSettle();
