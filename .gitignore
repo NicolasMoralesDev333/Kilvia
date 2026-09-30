@@ -3,3 +3,5 @@
 /.angular
 /.vscode
 *.log
+.env
+backend/.env

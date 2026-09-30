@@ -1,4 +1,16 @@
-# Kilvia
+# Kilvia - Plataforma Logística
+
+## Estructura del Ecosistema
+
+- `mobile/`: App móvil desarrollada en **Flutter** (16 pantallas operacionales).
+- `src/`: Panel web desarrollado en Angular.
+
+## Para ejecutar la aplicación Flutter
+
+```bash
+cd mobile
+flutter run
+```
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.23.
 
