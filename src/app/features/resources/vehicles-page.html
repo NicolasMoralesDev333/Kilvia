@@ -1,0 +1,39 @@
+<section class="resource-page">
+  <header class="resource-heading">
+    <div><p class="resource-eyebrow">FLOTA</p><h1>Vehículos</h1><p>Un registro actualizado de las unidades de tu empresa.</p></div>
+    @if (canCreate) { <button class="resource-primary" type="button" (click)="formOpen.set(!formOpen())">{{ formOpen() ? 'Cerrar' : 'Agregar vehículo' }}</button> }
+  </header>
+  @if (error()) { <p class="resource-error" role="alert">{{ error() }}</p> }
+  @if (formOpen()) {
+    <form class="resource-form" [formGroup]="form" (ngSubmit)="save()">
+      <h2>Datos del vehículo</h2>
+      <div class="resource-form-grid">
+        <label>Tipo<select formControlName="typeId"><option value="">Seleccionar</option>@for (type of types(); track type.id) { <option [value]="type.id">{{ type.name }}</option> }</select></label>
+        <label>Patente<input formControlName="plate" autocomplete="off" /></label>
+        <label>Marca<input formControlName="make" /></label>
+        <label>Modelo<input formControlName="model" /></label>
+        <label>Capacidad (t)<input type="number" min="0.1" step="0.1" formControlName="weightTons" /></label>
+        <label>Volumen (m³)<input type="number" min="0.1" step="0.1" formControlName="volumeM3" /></label>
+      </div>
+      <button class="resource-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar vehículo' }}</button>
+    </form>
+  }
+  @if (loading()) { <p class="resource-state" role="status">Cargando vehículos…</p> }
+  @else if (vehicles().length === 0) { <p class="resource-state">Todavía no hay vehículos registrados.</p> }
+  @else {
+    <div class="resource-list">
+      @for (vehicle of vehicles(); track vehicle.id) {
+        <article class="resource-card">
+          <div class="resource-card__top"><strong>{{ vehicle.plate }} · {{ vehicle.make }} {{ vehicle.model }}</strong><span class="resource-badge">{{ vehicle.status }}</span></div>
+          <p>{{ vehicle.typeName }}</p>
+          <small>{{ vehicle.weightTons }} t · {{ vehicle.volumeM3 }} m³</small>
+          @if (canCreate) {
+            <button class="resource-action" type="button" (click)="toggleMaintenance(vehicle)">
+              {{ vehicle.status === 'MANTENIMIENTO' ? 'Marcar disponible' : 'Enviar a mantenimiento' }}
+            </button>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>

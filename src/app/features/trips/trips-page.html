@@ -1,0 +1,63 @@
+<section class="resource-page">
+  <header class="resource-heading">
+    <div>
+      <p class="resource-eyebrow">{{ canManage ? 'OPERACIÓN' : 'TU JORNADA' }}</p>
+      <h1>{{ canManage ? 'Viajes' : 'Mis viajes' }}</h1>
+      <p>{{ canManage ? 'Planificá y consultá los viajes de tu empresa.' : 'Acá encontrás los viajes que tenés asignados.' }}</p>
+    </div>
+    @if (canManage) {
+      <button class="resource-primary" type="button" (click)="formOpen.set(!formOpen())">
+        {{ formOpen() ? 'Cerrar' : 'Nuevo viaje' }}
+      </button>
+    }
+  </header>
+
+  @if (saved()) { <p class="resource-success" role="status">El viaje se creó correctamente.</p> }
+  @if (error()) { <p class="resource-error" role="alert">{{ error() }}</p> }
+
+  @if (formOpen() && canManage) {
+    <form class="resource-form" [formGroup]="form" (ngSubmit)="save()">
+      <h2>Datos del viaje</h2>
+      <div class="resource-form-grid">
+        <label>Origen<input formControlName="origin" /></label>
+        <label>Destino<input formControlName="destination" /></label>
+        <label>Chofer<select formControlName="driverId">
+          <option value="">Seleccionar</option>
+          @for (driver of drivers(); track driver.id) {
+            <option [value]="driver.id">{{ driver.firstName }} {{ driver.lastName }}</option>
+          }
+        </select></label>
+        <label>Vehículo<select formControlName="vehicleId">
+          <option value="">Seleccionar</option>
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">{{ vehicle.plate }} · {{ vehicle.make }} {{ vehicle.model }}</option>
+          }
+        </select></label>
+        <label>Salida<input type="datetime-local" formControlName="departureAt" /></label>
+        <label>Llegada estimada<input type="datetime-local" formControlName="estimatedArrivalAt" /></label>
+        <label>Capacidad disponible (t)<input type="number" min="0" step="0.1" formControlName="availableWeightTons" /></label>
+        <label>Volumen disponible (m³)<input type="number" min="0" step="0.1" formControlName="availableVolumeM3" /></label>
+      </div>
+      <button class="resource-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar viaje' }}</button>
+    </form>
+  }
+
+  @if (loading()) {
+    <p class="resource-state" role="status">Cargando viajes…</p>
+  } @else if (trips().length === 0) {
+    <p class="resource-state">No hay viajes programados.</p>
+  } @else {
+    <div class="resource-list">
+      @for (trip of trips(); track trip.id) {
+        <article class="resource-card">
+          <div class="resource-card__top"><strong>{{ trip.origin }} <span aria-hidden="true">→</span> {{ trip.destination }}</strong><span class="resource-badge">{{ trip.status }}</span></div>
+          <p>{{ trip.vehicleLabel }} · {{ trip.driverName }}</p>
+          <small>{{ trip.departureAt | date:'dd/MM/yyyy HH:mm' }} · Capacidad {{ trip.availableWeightTons }} t</small>
+          @if (canManage && trip.status === 'PROGRAMADO') {
+            <button class="resource-action" type="button" (click)="cancel(trip)">Cancelar viaje</button>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>

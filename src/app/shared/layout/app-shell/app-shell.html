@@ -7,18 +7,14 @@
       </a>
 
       <nav class="desktop-nav" aria-label="Navegación principal">
-        @for (item of desktopNav; track item.label) {
-          @if (item.link) {
-            <a [routerLink]="item.link" routerLinkActive="is-active"><span>{{ item.label }}</span></a>
-          } @else {
-            <span class="desktop-nav__pending" [attr.aria-label]="item.label + ', disponible próximamente'">{{ item.label }}</span>
-          }
+        @for (item of desktopNav(); track item.label) {
+          <a [routerLink]="item.link" routerLinkActive="is-active"><span>{{ item.label }}</span></a>
         }
       </nav>
 
       <div class="account">
-        <span><small>Empresa demo</small><strong>Transporte Andino</strong></span>
-        <span class="account__avatar" aria-hidden="true">MM</span>
+        <span><small>{{ user()?.role }}</small><strong>{{ user()?.firstName }} {{ user()?.lastName }}</strong></span>
+        <button class="account__avatar" type="button" (click)="logout()" aria-label="Cerrar sesión">{{ initials() }}</button>
       </div>
     </div>
   </header>
@@ -27,25 +23,25 @@
 
   @if (moreOpen()) {
     <section class="more-panel" aria-label="Más opciones">
-      <button type="button"><app-k-icon name="warehouse" [size]="19" />Vehículos <small>Próximamente</small></button>
-      <button type="button"><app-k-icon name="drivers" [size]="19" />Choferes <small>Próximamente</small></button>
-      <button type="button"><app-k-icon name="settings" [size]="19" />Configuración <small>Próximamente</small></button>
+      @if (user()?.role !== 'CHOFER') {
+        <a routerLink="/vehicles" (click)="moreOpen.set(false)"><app-k-icon name="warehouse" [size]="19" />Vehículos</a>
+        <a routerLink="/drivers" (click)="moreOpen.set(false)"><app-k-icon name="drivers" [size]="19" />Choferes</a>
+        <a routerLink="/loads" (click)="moreOpen.set(false)"><app-k-icon name="briefcase" [size]="19" />Cargas</a>
+      }
+      @if (user()?.role === 'ADMIN') {
+        <a routerLink="/users" (click)="moreOpen.set(false)"><app-k-icon name="drivers" [size]="19" />Usuarios</a>
+        <a routerLink="/company" (click)="moreOpen.set(false)"><app-k-icon name="settings" [size]="19" />Empresa</a>
+      }
+      <button type="button" (click)="logout()"><app-k-icon name="settings" [size]="19" />Cerrar sesión</button>
     </section>
   }
 
   <nav class="mobile-nav" aria-label="Navegación principal móvil">
-    @for (item of mobileNav; track item.label) {
-      @if (item.link) {
-        <a [routerLink]="item.link" routerLinkActive="is-active">
-          <app-k-icon [name]="item.icon" [size]="21" />
-          <span>{{ item.mobileLabel ?? item.label }}</span>
-        </a>
-      } @else {
-        <button type="button" aria-disabled="true" [attr.aria-label]="item.label + ', disponible próximamente'">
-          <app-k-icon [name]="item.icon" [size]="21" />
-          <span>{{ item.mobileLabel ?? item.label }}</span>
-        </button>
-      }
+    @for (item of mobileNav(); track item.label) {
+      <a [routerLink]="item.link" routerLinkActive="is-active">
+        <app-k-icon [name]="item.icon" [size]="21" />
+        <span>{{ item.mobileLabel ?? item.label }}</span>
+      </a>
     }
     <button type="button" (click)="toggleMore()" [attr.aria-expanded]="moreOpen()" aria-label="Más opciones">
       <app-k-icon [name]="moreOpen() ? 'close' : 'more'" [size]="21" />

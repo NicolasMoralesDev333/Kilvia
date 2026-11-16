@@ -1,0 +1,53 @@
+<main class="auth-page">
+  <section class="auth-card" aria-labelledby="auth-heading">
+    <a class="auth-brand" routerLink="/" aria-label="Kilvia">
+      <span class="auth-brand__mark" aria-hidden="true">K</span>
+      <span>Kilvia</span>
+    </a>
+    <p class="auth-eyebrow">{{ isRegister ? 'PRIMEROS PASOS' : 'ACCESO A TU CUENTA' }}</p>
+    <h1 id="auth-heading">{{ heading() }}</h1>
+    <p class="auth-intro">
+      {{ isRegister ? 'Creá tu empresa y empezá a coordinar cada viaje.' : 'Gestioná tu operación logística desde un solo lugar.' }}
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (isRegister) {
+        <label>Nombre de la empresa
+          <input formControlName="companyName" autocomplete="organization" />
+        </label>
+        <label>CUIT
+          <input formControlName="cuit" autocomplete="off" />
+        </label>
+        <div class="auth-fields">
+          <label>Nombre
+            <input formControlName="firstName" autocomplete="given-name" />
+          </label>
+          <label>Apellido
+            <input formControlName="lastName" autocomplete="family-name" />
+          </label>
+        </div>
+      }
+      <label>Email
+        <input type="email" formControlName="email" autocomplete="email" />
+      </label>
+      <label>Contraseña
+        <input type="password" formControlName="password" [attr.autocomplete]="isRegister ? 'new-password' : 'current-password'" />
+        @if (isRegister) { <small>Usá al menos 10 caracteres.</small> }
+      </label>
+
+      @if (errorMessage()) {
+        <p class="auth-error" role="alert">{{ errorMessage() }}</p>
+      }
+      <button class="auth-submit" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Un momento…' : (isRegister ? 'Crear cuenta' : 'Iniciar sesión') }}
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      {{ isRegister ? '¿Ya tenés cuenta?' : '¿Primera vez en Kilvia?' }}
+      <a [routerLink]="isRegister ? '/login' : '/register'">
+        {{ isRegister ? 'Iniciar sesión' : 'Crear cuenta' }}
+      </a>
+    </p>
+  </section>
+</main>

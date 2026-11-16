@@ -1,0 +1,20 @@
+<section class="resource-page">
+  <header class="resource-heading">
+    <div><p class="resource-eyebrow">ADMINISTRACIÓN</p><h1>Empresa</h1><p>Actualizá los datos de tu organización.</p></div>
+  </header>
+  @if (error()) { <p class="resource-error" role="alert">{{ error() }}</p> }
+  @if (saved()) { <p class="resource-success" role="status">Los datos se guardaron correctamente.</p> }
+  @if (loading()) { <p class="resource-state" role="status">Cargando empresa…</p> }
+  @else {
+    <form class="resource-form" [formGroup]="form" (ngSubmit)="save()">
+      <div class="resource-form-grid">
+        <label>Nombre de la empresa<input formControlName="name" autocomplete="organization" /></label>
+        <label>CUIT<input formControlName="cuit" /></label>
+        <label>Email<input type="email" formControlName="email" autocomplete="email" /></label>
+        <label>Teléfono<input type="tel" formControlName="phone" autocomplete="tel" /></label>
+        <label>Dirección<input formControlName="address" autocomplete="street-address" /></label>
+      </div>
+      <button class="resource-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar cambios' }}</button>
+    </form>
+  }
+</section>

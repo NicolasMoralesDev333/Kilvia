@@ -1,0 +1,42 @@
+<section class="resource-page">
+  <header class="resource-heading">
+    <div><p class="resource-eyebrow">EQUIPO</p><h1>Choferes</h1><p>Personas habilitadas para conducir los viajes de tu empresa.</p></div>
+    @if (canCreate) { <button class="resource-primary" type="button" (click)="formOpen.set(!formOpen())">{{ formOpen() ? 'Cerrar' : 'Agregar chofer' }}</button> }
+  </header>
+  @if (error()) { <p class="resource-error" role="alert">{{ error() }}</p> }
+  @if (formOpen()) {
+    <form class="resource-form" [formGroup]="form" (ngSubmit)="save()">
+      <h2>Perfil de chofer</h2>
+      <div class="resource-form-grid">
+        <label>Nombre<input formControlName="firstName" autocomplete="given-name" /></label>
+        <label>Apellido<input formControlName="lastName" autocomplete="family-name" /></label>
+        <label>Email<input type="email" formControlName="email" autocomplete="email" /></label>
+        <label>Contraseña inicial<input type="password" formControlName="password" autocomplete="new-password" /></label>
+        <label>DNI<input formControlName="dni" /></label>
+        <label>Número de licencia<input formControlName="licenseNumber" /></label>
+        <label>Categoría de licencia<input formControlName="licenseCategory" /></label>
+        <label>Vencimiento de licencia<input type="date" formControlName="licenseExpiration" /></label>
+        <label>Teléfono<input type="tel" formControlName="phone" autocomplete="tel" /></label>
+      </div>
+      <button class="resource-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Crear chofer' }}</button>
+    </form>
+  }
+  @if (loading()) { <p class="resource-state" role="status">Cargando choferes…</p> }
+  @else if (drivers().length === 0) { <p class="resource-state">Todavía no hay choferes registrados.</p> }
+  @else {
+    <div class="resource-list">
+      @for (driver of drivers(); track driver.id) {
+        <article class="resource-card">
+          <div class="resource-card__top"><strong>{{ driver.firstName }} {{ driver.lastName }}</strong><span class="resource-badge">{{ driver.availability }}</span></div>
+          <p>{{ driver.email }} · DNI {{ driver.dni }}</p>
+          <small>Licencia {{ driver.licenseCategory }} · vence {{ driver.licenseExpiration | date:'dd/MM/yyyy' }} · {{ driver.phone || 'Sin teléfono' }}</small>
+          @if (canCreate) {
+            <button class="resource-action" type="button" (click)="toggleStatus(driver)">
+              {{ driver.driverStatus === 'INACTIVO' ? 'Reactivar chofer' : 'Desactivar chofer' }}
+            </button>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>

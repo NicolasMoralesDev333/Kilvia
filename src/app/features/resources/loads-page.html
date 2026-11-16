@@ -1,0 +1,39 @@
+<section class="resource-page">
+  <header class="resource-heading">
+    <div><p class="resource-eyebrow">SOLICITUDES</p><h1>Cargas</h1><p>Registrá y consultá las cargas de tu empresa.</p></div>
+    <button class="resource-primary" type="button" (click)="formOpen.set(!formOpen())">{{ formOpen() ? 'Cerrar' : 'Registrar carga' }}</button>
+  </header>
+  @if (error()) { <p class="resource-error" role="alert">{{ error() }}</p> }
+  @if (formOpen()) {
+    <form class="resource-form" [formGroup]="form" (ngSubmit)="save()">
+      <h2>Datos de la carga</h2>
+      <div class="resource-form-grid">
+        <label>Origen<input formControlName="origin" /></label>
+        <label>Destino<input formControlName="destination" /></label>
+        <label>Fecha de retiro<input type="datetime-local" formControlName="pickupAt" /></label>
+        <label>Tipo de carga<input formControlName="cargoType" /></label>
+        <label>Peso (t)<input type="number" min="0.1" step="0.1" formControlName="weightTons" /></label>
+        <label>Volumen (m³)<input type="number" min="0.1" step="0.1" formControlName="volumeM3" /></label>
+        <label>Vehículo requerido<input formControlName="requiredVehicle" /></label>
+        <label>Restricciones<input formControlName="restrictions" /></label>
+      </div>
+      <button class="resource-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar carga' }}</button>
+    </form>
+  }
+  @if (loading()) { <p class="resource-state" role="status">Cargando cargas…</p> }
+  @else if (loads().length === 0) { <p class="resource-state">No hay cargas registradas.</p> }
+  @else {
+    <div class="resource-list">
+      @for (load of loads(); track load.id) {
+        <article class="resource-card">
+          <div class="resource-card__top"><strong>{{ load.origin }} <span aria-hidden="true">→</span> {{ load.destination }}</strong><span class="resource-badge">{{ load.status }}</span></div>
+          <p>{{ load.cargoType }} · {{ load.weightTons }} t · {{ load.volumeM3 }} m³</p>
+          <small>{{ load.pickupAt | date:'dd/MM/yyyy HH:mm' }} · Requiere {{ load.requiredVehicle }}</small>
+          @if (load.status !== 'CANCELADA' && load.status !== 'ENTREGADA') {
+            <button class="resource-action" type="button" (click)="cancel(load)">Cancelar carga</button>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>

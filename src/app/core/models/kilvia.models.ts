@@ -68,14 +68,6 @@ export interface MatchOpportunity {
   readonly geometry: RouteGeometry;
 }
 
-export interface CreateTripRequest {
-  readonly origin: string;
-  readonly destination: string;
-  readonly departureDate: string;
-  readonly vehicleId: string;
-  readonly freeCapacityTons: number;
-}
-
 export interface OperationalMetric {
   readonly label: string;
   readonly value: number;

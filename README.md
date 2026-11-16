@@ -1,71 +1,57 @@
-# Kilvia - Plataforma Logística
+# Kilvia
 
-## Estructura del Ecosistema
+Kilvia is a logistics coordination platform with an Angular web client and a Go REST API backed by PostgreSQL. The `mobile/` directory contains the Flutter application.
 
-- `mobile/`: App móvil desarrollada en **Flutter** (16 pantallas operacionales).
-- `src/`: Panel web desarrollado en Angular.
+## Local development with Docker
 
-## Para ejecutar la aplicación Flutter
+Requirements: Docker Desktop with the Compose plugin.
 
-```bash
-cd mobile
-flutter run
+1. Copy `.env.example` to `.env`.
+2. Replace `JWT_SECRET` and the database password with local values.
+3. Start the stack:
+
+   ```powershell
+   docker compose up --build
+   ```
+
+The web app is available at `http://localhost:4200`, the API at `http://localhost:8080`, and the health check at `http://localhost:8080/health`. Compose waits for PostgreSQL, applies `backend/migrations`, then starts the API. Register the first company and administrator from the web app.
+
+The credentials in `.env.example` are for local development only. Do not use them in a deployed environment.
+
+## Running the Angular client separately
+
+Install dependencies and run the development server:
+
+```powershell
+npm ci
+npm start
 ```
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.23.
+The Angular dev-server proxy forwards `/api` requests to `http://localhost:8080`. Start PostgreSQL and the API separately before signing in. The API requires `DATABASE_URL` and a `JWT_SECRET` of at least 32 characters; `FRONTEND_ORIGIN` defaults to `http://localhost:4200`.
 
-## Development server
+## API
 
-To start a local development server, run:
+All application endpoints are versioned under `/api/v1`. Authentication endpoints:
 
-```bash
-ng serve
+- `POST /api/v1/auth/register` creates a company and its first `ADMIN`.
+- `POST /api/v1/auth/login` authenticates a user.
+- `GET /api/v1/auth/me` returns the authenticated user.
+
+The API also exposes company, user, driver, vehicle, trip, load, and match read endpoints. Protected endpoints require a bearer token. Role permissions and company isolation are enforced by the backend, not only by the Angular route guards.
+
+## Demo data
+
+Opportunities, matches, and the dashboard summary continue to use Sprint 1 demo data. Company, user, driver, vehicle, trip, and load management screens use the API.
+
+## Tests and builds
+
+```powershell
+npm run build
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+With Go 1.24 installed:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```powershell
+cd backend
+go test ./...
 ```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
