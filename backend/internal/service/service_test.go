@@ -36,6 +36,14 @@ func (s *stubRepository) CreateTrip(_ context.Context, identity domain.Identity,
 	return domain.Trip{ID: "trip-1", OperatorID: identity.UserID, DriverID: input.DriverID, VehicleID: input.VehicleID}, nil
 }
 
+func (s *stubRepository) MatchCandidates(context.Context, string) ([]domain.MatchCandidate, error) {
+	return nil, nil
+}
+
+func (s *stubRepository) DeleteProposedMatches(context.Context, string) error {
+	return nil
+}
+
 func TestRegisterHashesPasswordAndForcesAdmin(t *testing.T) {
 	repo := &stubRepository{}
 	svc := New(repo, "a-secret-that-is-longer-than-thirty-two-characters", time.Hour)
@@ -71,6 +79,25 @@ func TestCreateTripUsesAuthenticatedCompany(t *testing.T) {
 	}
 	if repo.companySeen != identity.CompanyID {
 		t.Fatalf("expected company %s, got %s", identity.CompanyID, repo.companySeen)
+	}
+}
+
+func TestCreateTripRequiresKnownCitiesUnlessCoordinatesAreProvided(t *testing.T) {
+	svc := New(&stubRepository{}, "a-secret-that-is-longer-than-thirty-two-characters", time.Hour)
+	input := domain.CreateTripInput{
+		DriverID: "driver-1", VehicleID: "vehicle-1", Origin: "Unknown City", Destination: "Mendoza",
+		DepartureAt: time.Now().Add(time.Hour), EstimatedArrivalAt: time.Now().Add(8 * time.Hour),
+		AvailableWeightTons: 10, AvailableVolumeM3: 30,
+	}
+	identity := domain.Identity{UserID: "operator-1", CompanyID: "company-a", Role: domain.RoleOperator}
+	if _, err := svc.CreateTrip(context.Background(), identity, input); err != ErrInvalidInput {
+		t.Fatalf("expected unknown city to be rejected, got %v", err)
+	}
+
+	lat, lng := -34.6, -58.4
+	input.OriginLat, input.OriginLng = &lat, &lng
+	if _, err := svc.CreateTrip(context.Background(), identity, input); err != nil {
+		t.Fatalf("expected explicit coordinates to allow an unknown city, got %v", err)
 	}
 }
 

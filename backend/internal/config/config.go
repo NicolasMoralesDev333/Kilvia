@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	HTTPAddr      string
-	DatabaseURL   string
-	JWTSecret     string
+	HTTPAddr       string
+	DatabaseURL    string
+	JWTSecret      string
 	FrontendOrigin string
-	TokenTTL      time.Duration
+	OSRMBaseURL    string
+	TokenTTL       time.Duration
 }
 
 func Load() (Config, error) {
@@ -20,6 +21,7 @@ func Load() (Config, error) {
 		DatabaseURL:    os.Getenv("DATABASE_URL"),
 		JWTSecret:      os.Getenv("JWT_SECRET"),
 		FrontendOrigin: envOrDefault("FRONTEND_ORIGIN", "http://localhost:4200"),
+		OSRMBaseURL:    envOrDefault("OSRM_BASE_URL", "https://router.project-osrm.org"),
 		TokenTTL:       8 * time.Hour,
 	}
 	if cfg.DatabaseURL == "" {

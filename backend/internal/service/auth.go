@@ -9,6 +9,7 @@ import (
 
 	"github.com/NicolasMoralesDev333/Kilvia/backend/internal/domain"
 	"github.com/NicolasMoralesDev333/Kilvia/backend/internal/repository"
+	"github.com/NicolasMoralesDev333/Kilvia/backend/internal/routing"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -30,10 +31,18 @@ type Service struct {
 	jwtKey     []byte
 	tokenTTL   time.Duration
 	now        func() time.Time
+	router     *routing.Router
 }
 
 func New(repo repository.Repository, jwtSecret string, tokenTTL time.Duration) *Service {
-	return &Service{repository: repo, jwtKey: []byte(jwtSecret), tokenTTL: tokenTTL, now: time.Now}
+	return NewWithRouting(repo, jwtSecret, tokenTTL, "")
+}
+
+func NewWithRouting(repo repository.Repository, jwtSecret string, tokenTTL time.Duration, osrmBaseURL string) *Service {
+	return &Service{
+		repository: repo, jwtKey: []byte(jwtSecret), tokenTTL: tokenTTL,
+		now: time.Now, router: routing.New(osrmBaseURL),
+	}
 }
 
 func (s *Service) Register(ctx context.Context, input domain.RegisterCompanyInput) (AuthResult, error) {

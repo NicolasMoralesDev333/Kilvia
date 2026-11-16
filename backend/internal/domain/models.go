@@ -42,21 +42,21 @@ type User struct {
 
 type Driver struct {
 	User
-	DNI               string     `json:"dni"`
-	LicenseNumber     string     `json:"licenseNumber"`
-	LicenseCategory   string     `json:"licenseCategory"`
-	LicenseExpiration time.Time  `json:"licenseExpiration"`
-	Phone             string     `json:"phone"`
-	Availability      string     `json:"availability"`
-	DriverStatus      string     `json:"driverStatus"`
+	DNI               string    `json:"dni"`
+	LicenseNumber     string    `json:"licenseNumber"`
+	LicenseCategory   string    `json:"licenseCategory"`
+	LicenseExpiration time.Time `json:"licenseExpiration"`
+	Phone             string    `json:"phone"`
+	Availability      string    `json:"availability"`
+	DriverStatus      string    `json:"driverStatus"`
 }
 
 type VehicleType struct {
-	ID                    string  `json:"id"`
-	Name                  string  `json:"name"`
-	Description           string  `json:"description"`
-	ReferenceWeightTons   float64 `json:"referenceWeightTons"`
-	ReferenceVolumeM3     float64 `json:"referenceVolumeM3"`
+	ID                  string  `json:"id"`
+	Name                string  `json:"name"`
+	Description         string  `json:"description"`
+	ReferenceWeightTons float64 `json:"referenceWeightTons"`
+	ReferenceVolumeM3   float64 `json:"referenceVolumeM3"`
 }
 
 type Vehicle struct {
@@ -74,24 +74,31 @@ type Vehicle struct {
 }
 
 type Trip struct {
-	ID                 string    `json:"id"`
-	OperatorID         string    `json:"operatorId"`
-	DriverID           string    `json:"driverId"`
-	DriverName         string    `json:"driverName"`
-	VehicleID          string    `json:"vehicleId"`
-	VehicleLabel       string    `json:"vehicleLabel"`
-	Origin             string    `json:"origin"`
-	Destination        string    `json:"destination"`
-	DepartureAt        time.Time `json:"departureAt"`
-	EstimatedArrivalAt time.Time `json:"estimatedArrivalAt"`
-	AvailableWeightTons float64  `json:"availableWeightTons"`
-	AvailableVolumeM3  float64   `json:"availableVolumeM3"`
-	Status             string    `json:"status"`
-	RegisteredAt       time.Time `json:"registeredAt"`
+	ID                  string    `json:"id"`
+	Code                string    `json:"code"`
+	OperatorID          string    `json:"operatorId"`
+	DriverID            string    `json:"driverId"`
+	DriverName          string    `json:"driverName"`
+	VehicleID           string    `json:"vehicleId"`
+	VehicleLabel        string    `json:"vehicleLabel"`
+	Origin              string    `json:"origin"`
+	Destination         string    `json:"destination"`
+	DepartureAt         time.Time `json:"departureAt"`
+	EstimatedArrivalAt  time.Time `json:"estimatedArrivalAt"`
+	AvailableWeightTons float64   `json:"availableWeightTons"`
+	AvailableVolumeM3   float64   `json:"availableVolumeM3"`
+	Status              string    `json:"status"`
+	RegisteredAt        time.Time `json:"registeredAt"`
+	OriginLat           *float64  `json:"originLat,omitempty"`
+	OriginLng           *float64  `json:"originLng,omitempty"`
+	DestinationLat      *float64  `json:"destinationLat,omitempty"`
+	DestinationLng      *float64  `json:"destinationLng,omitempty"`
+	BaseDistanceKM      float64   `json:"baseDistanceKm"`
 }
 
 type Load struct {
 	ID              string    `json:"id"`
+	Code            string    `json:"code"`
 	UserID          string    `json:"userId"`
 	Origin          string    `json:"origin"`
 	Destination     string    `json:"destination"`
@@ -103,6 +110,10 @@ type Load struct {
 	Restrictions    string    `json:"restrictions"`
 	Status          string    `json:"status"`
 	RegisteredAt    time.Time `json:"registeredAt"`
+	OriginLat       *float64  `json:"originLat,omitempty"`
+	OriginLng       *float64  `json:"originLng,omitempty"`
+	DestinationLat  *float64  `json:"destinationLat,omitempty"`
+	DestinationLng  *float64  `json:"destinationLng,omitempty"`
 }
 
 type RegisterCompanyInput struct {
@@ -179,6 +190,10 @@ type CreateTripInput struct {
 	EstimatedArrivalAt  time.Time `json:"estimatedArrivalAt"`
 	AvailableWeightTons float64   `json:"availableWeightTons"`
 	AvailableVolumeM3   float64   `json:"availableVolumeM3"`
+	OriginLat           *float64  `json:"originLat,omitempty"`
+	OriginLng           *float64  `json:"originLng,omitempty"`
+	DestinationLat      *float64  `json:"destinationLat,omitempty"`
+	DestinationLng      *float64  `json:"destinationLng,omitempty"`
 }
 
 type UpdateTripInput struct {
@@ -191,6 +206,10 @@ type UpdateTripInput struct {
 	AvailableWeightTons *float64   `json:"availableWeightTons"`
 	AvailableVolumeM3   *float64   `json:"availableVolumeM3"`
 	Status              *string    `json:"status"`
+	OriginLat           *float64   `json:"originLat,omitempty"`
+	OriginLng           *float64   `json:"originLng,omitempty"`
+	DestinationLat      *float64   `json:"destinationLat,omitempty"`
+	DestinationLng      *float64   `json:"destinationLng,omitempty"`
 }
 
 type CreateLoadInput struct {
@@ -202,6 +221,10 @@ type CreateLoadInput struct {
 	VolumeM3        float64   `json:"volumeM3"`
 	RequiredVehicle string    `json:"requiredVehicle"`
 	Restrictions    string    `json:"restrictions"`
+	OriginLat       *float64  `json:"originLat,omitempty"`
+	OriginLng       *float64  `json:"originLng,omitempty"`
+	DestinationLat  *float64  `json:"destinationLat,omitempty"`
+	DestinationLng  *float64  `json:"destinationLng,omitempty"`
 }
 
 type UpdateLoadInput struct {
@@ -214,4 +237,117 @@ type UpdateLoadInput struct {
 	RequiredVehicle *string    `json:"requiredVehicle"`
 	Restrictions    *string    `json:"restrictions"`
 	Status          *string    `json:"status"`
+	OriginLat       *float64   `json:"originLat,omitempty"`
+	OriginLng       *float64   `json:"originLng,omitempty"`
+	DestinationLat  *float64   `json:"destinationLat,omitempty"`
+	DestinationLng  *float64   `json:"destinationLng,omitempty"`
+}
+
+type MatchCandidate struct {
+	TripID, TripCode, TripOrigin, TripDestination string
+	TripOriginRegion, TripDestinationRegion       string
+	TripDeparture, TripArrival                    time.Time
+	TripWeight, TripVolume                        float64
+	TripStatus, VehicleName, VehicleLabel         string
+	TripOriginLat, TripOriginLng                  *float64
+	TripDestinationLat, TripDestinationLng        *float64
+	LoadID, LoadCode, LoadOrigin, LoadDestination string
+	LoadOriginRegion, LoadDestinationRegion       string
+	LoadPickup                                    time.Time
+	LoadWeight, LoadVolume                        float64
+	LoadCargoType, LoadRequiredVehicle            string
+	LoadRestrictions, LoadStatus                  string
+	LoadOriginLat, LoadOriginLng                  *float64
+	LoadDestinationLat, LoadDestinationLng        *float64
+}
+
+type MatchRecord struct {
+	TripID, LoadID string
+	Compatibility  float64
+	DetourKM       float64
+	AdditionalMins int
+	UsableKM       float64
+	Utilization    float64
+	GeometryJSON   []byte
+}
+
+type MatchItem struct {
+	ID            string           `json:"id"`
+	Compatibility int              `json:"compatibility"`
+	Level         string           `json:"level"`
+	Trip          MatchTrip        `json:"trip"`
+	Load          MatchLoad        `json:"load"`
+	Capacity      MatchCapacity    `json:"capacity"`
+	Metrics       MatchMetrics     `json:"metrics"`
+	Criteria      []MatchCriterion `json:"criteria"`
+	Geometry      MatchGeometry    `json:"geometry"`
+	RouteGeometry RouteGeometry    `json:"route_geometry"`
+}
+
+type MatchTrip struct {
+	ID               string        `json:"id"`
+	Origin           MatchLocation `json:"origin"`
+	Destination      MatchLocation `json:"destination"`
+	Date             string        `json:"date"`
+	DateShort        string        `json:"dateShort"`
+	TimeWindow       string        `json:"timeWindow"`
+	Vehicle          string        `json:"vehicle"`
+	CapacityFreeTons float64       `json:"capacityFreeTons"`
+	MatchCount       int           `json:"matchCount"`
+	Status           string        `json:"status"`
+}
+
+type MatchLoad struct {
+	ID              string        `json:"id"`
+	Origin          MatchLocation `json:"origin"`
+	Destination     MatchLocation `json:"destination"`
+	PickupDate      string        `json:"pickupDate"`
+	PickupTime      string        `json:"pickupTime"`
+	CargoType       string        `json:"cargoType"`
+	WeightTons      float64       `json:"weightTons"`
+	VolumeM3        float64       `json:"volumeM3"`
+	RequiredVehicle string        `json:"requiredVehicle"`
+	Restrictions    string        `json:"restrictions"`
+}
+
+type MatchLocation struct {
+	City   string `json:"city"`
+	Region string `json:"region"`
+}
+
+type MatchCapacity struct {
+	FreeTons           float64 `json:"freeTons"`
+	LoadTons           float64 `json:"loadTons"`
+	UtilizationPercent float64 `json:"utilizationPercent"`
+}
+
+type MatchMetrics struct {
+	DetourKM          float64 `json:"detourKm"`
+	AdditionalMinutes int     `json:"additionalMinutes"`
+	UsableKM          float64 `json:"usableKm"`
+	Profitability     string  `json:"profitability"`
+}
+
+type MatchCriterion struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+	Tone  string `json:"tone"`
+}
+
+type MatchGeometry struct {
+	Planned  [][]float64 `json:"planned"`
+	Utilized [][]float64 `json:"utilized"`
+	Detour   [][]float64 `json:"detour"`
+}
+
+type MatchRouteWaypoint struct {
+	Name       string    `json:"name"`
+	Label      string    `json:"label"`
+	Coordinate []float64 `json:"coordinate"`
+}
+
+type RouteGeometry struct {
+	Coordinates [][]float64          `json:"coordinates"`
+	Waypoints   []MatchRouteWaypoint `json:"waypoints"`
+	Source      string               `json:"source"`
 }

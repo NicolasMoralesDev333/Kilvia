@@ -99,4 +99,8 @@ export class KilviaApiService {
   updateCompany(input: Pick<ApiCompany, 'name' | 'cuit' | 'address' | 'phone' | 'email'>): Observable<ApiCompany> {
     return this.http.patch<ApiCompany>(`${API_BASE_URL}/company`, input);
   }
+
+  recalculateMatches(): Observable<{ readonly matches: number }> {
+    return this.http.post<{ readonly matches: number }>(`${API_BASE_URL}/matches/recalculate`, {});
+  }
 }

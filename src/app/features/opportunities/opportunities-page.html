@@ -1,16 +1,26 @@
 <div class="opportunities-page">
   <header class="page-intro">
     <div>
-      <p class="eyebrow">Matching logístico <span class="demo-meta">Datos demo</span></p>
+      <p class="eyebrow">Matching logístico</p>
       <h1>Oportunidades sobre tus rutas activas.</h1>
       <p>Cargas compatibles ordenadas por impacto operativo, capacidad y desvío.</p>
     </div>
-    <div class="intro-count"><strong>{{ opportunities().length }}</strong><span>matches<br />para evaluar</span></div>
+    <div class="intro-count">
+      <strong>{{ loading() ? '…' : opportunities().length }}</strong><span>matches<br />para evaluar</span>
+      <button type="button" class="recalculate-button" [disabled]="loading()" (click)="recalculate()">
+        {{ loading() ? 'Actualizando…' : 'Recalcular matches' }}
+      </button>
+    </div>
   </header>
 
   <main class="opportunity-workspace">
-    <div class="list-heading"><span>Ordenadas por compatibilidad</span><span>Actualizadas para la planificación demo</span></div>
+    <div class="list-heading"><span>Ordenadas por compatibilidad</span><span>Calculadas para tus viajes y cargas</span></div>
     <div class="opportunity-list">
+      @if (loading()) {
+        <p class="empty-state" role="status">Buscando oportunidades compatibles…</p>
+      } @else if (error()) {
+        <p class="empty-state" role="alert">{{ error() }}</p>
+      } @else {
       @for (item of opportunities(); track item.id; let position = $index) {
         <article [class.is-featured]="position === 0">
           <div class="opportunity-index"><span>0{{ position + 1 }}</span>@if (position === 0) { <strong>Recomendada</strong> }</div>
@@ -32,7 +42,7 @@
       } @empty {
         <p class="empty-state">No hay oportunidades compatibles en este momento.</p>
       }
+      }
     </div>
-    <p class="demo-note">Compatibilidad, distancias y tiempos ficticios para fines de prototipo.</p>
   </main>
 </div>

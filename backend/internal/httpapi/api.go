@@ -83,6 +83,7 @@ func New(svc *service.Service, frontendOrigin string) http.Handler {
 
 			protected.With(requireRoles(domain.RoleAdmin, domain.RoleOperator)).Get("/matches", api.listMatches)
 			protected.With(requireRoles(domain.RoleAdmin, domain.RoleOperator)).Get("/matches/{id}", api.getMatch)
+			protected.With(requireRoles(domain.RoleAdmin, domain.RoleOperator)).Post("/matches/recalculate", api.recalculateMatches)
 		})
 	})
 	return router

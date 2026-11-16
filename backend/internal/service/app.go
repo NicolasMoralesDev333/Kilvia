@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
 	"github.com/NicolasMoralesDev333/Kilvia/backend/internal/domain"
+	"github.com/NicolasMoralesDev333/Kilvia/backend/internal/geocoder"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -144,6 +146,9 @@ func (s *Service) CreateTrip(ctx context.Context, identity domain.Identity, inpu
 		input.AvailableWeightTons < 0 || input.AvailableVolumeM3 < 0 {
 		return domain.Trip{}, ErrInvalidInput
 	}
+	if !applyTripCoordinates(&input) {
+		return domain.Trip{}, ErrInvalidInput
+	}
 	if _, err := s.repository.GetDriver(ctx, identity.CompanyID, input.DriverID); err != nil {
 		return domain.Trip{}, translateRepositoryError(err)
 	}
@@ -151,7 +156,11 @@ func (s *Service) CreateTrip(ctx context.Context, identity domain.Identity, inpu
 		return domain.Trip{}, translateRepositoryError(err)
 	}
 	item, err := s.repository.CreateTrip(ctx, identity, input)
-	return item, translateRepositoryError(err)
+	if err != nil {
+		return domain.Trip{}, translateRepositoryError(err)
+	}
+	s.recalculateAfterChange(ctx, identity, "trip")
+	return item, nil
 }
 
 func (s *Service) UpdateTrip(ctx context.Context, identity domain.Identity, tripID string, input domain.UpdateTripInput) (domain.Trip, error) {
@@ -161,6 +170,9 @@ func (s *Service) UpdateTrip(ctx context.Context, identity domain.Identity, trip
 	current, err := s.repository.GetTrip(ctx, identity, tripID)
 	if err != nil {
 		return domain.Trip{}, translateRepositoryError(err)
+	}
+	if !applyTripUpdateCoordinates(&input, current) {
+		return domain.Trip{}, ErrInvalidInput
 	}
 	if input.DriverID != nil {
 		if _, err := s.repository.GetDriver(ctx, identity.CompanyID, *input.DriverID); err != nil {
@@ -183,7 +195,11 @@ func (s *Service) UpdateTrip(ctx context.Context, identity domain.Identity, trip
 		return domain.Trip{}, ErrInvalidInput
 	}
 	item, err := s.repository.UpdateTrip(ctx, identity, tripID, input)
-	return item, translateRepositoryError(err)
+	if err != nil {
+		return domain.Trip{}, translateRepositoryError(err)
+	}
+	s.recalculateAfterChange(ctx, identity, "trip")
+	return item, nil
 }
 
 func (s *Service) ListLoads(ctx context.Context, identity domain.Identity) ([]domain.Load, error) {
@@ -210,14 +226,133 @@ func (s *Service) CreateLoad(ctx context.Context, identity domain.Identity, inpu
 		input.PickupAt.IsZero() || input.WeightTons <= 0 || input.VolumeM3 <= 0 {
 		return domain.Load{}, ErrInvalidInput
 	}
+	if !applyLoadCoordinates(&input) {
+		return domain.Load{}, ErrInvalidInput
+	}
 	item, err := s.repository.CreateLoad(ctx, identity, input)
-	return item, translateRepositoryError(err)
+	if err != nil {
+		return domain.Load{}, translateRepositoryError(err)
+	}
+	s.recalculateAfterChange(ctx, identity, "load")
+	return item, nil
 }
 
 func (s *Service) UpdateLoad(ctx context.Context, identity domain.Identity, loadID string, input domain.UpdateLoadInput) (domain.Load, error) {
 	if identity.Role == domain.RoleDriver {
 		return domain.Load{}, ErrForbidden
 	}
+	current, err := s.repository.GetLoad(ctx, identity, loadID)
+	if err != nil {
+		return domain.Load{}, translateRepositoryError(err)
+	}
+	if !applyLoadUpdateCoordinates(&input, current) {
+		return domain.Load{}, ErrInvalidInput
+	}
 	item, err := s.repository.UpdateLoad(ctx, identity, loadID, input)
-	return item, translateRepositoryError(err)
+	if err != nil {
+		return domain.Load{}, translateRepositoryError(err)
+	}
+	s.recalculateAfterChange(ctx, identity, "load")
+	return item, nil
+}
+
+func (s *Service) recalculateAfterChange(ctx context.Context, identity domain.Identity, resource string) {
+	if _, err := s.RecalculateMatches(ctx, identity); err != nil {
+		slog.Error("failed to recalculate matches after resource change",
+			"resource", resource, "company_id", identity.CompanyID, "error", err)
+	}
+}
+
+func applyTripCoordinates(input *domain.CreateTripInput) bool {
+	originLat, originLng, ok := resolveInputLocation(input.Origin, input.OriginLat, input.OriginLng)
+	if !ok {
+		return false
+	}
+	destinationLat, destinationLng, ok := resolveInputLocation(input.Destination, input.DestinationLat, input.DestinationLng)
+	if !ok {
+		return false
+	}
+	input.OriginLat, input.OriginLng = &originLat, &originLng
+	input.DestinationLat, input.DestinationLng = &destinationLat, &destinationLng
+	return true
+}
+
+func applyTripUpdateCoordinates(input *domain.UpdateTripInput, current domain.Trip) bool {
+	if input.Origin != nil || input.OriginLat != nil || input.OriginLng != nil {
+		city := current.Origin
+		if input.Origin != nil {
+			city = *input.Origin
+		}
+		lat, lng, ok := resolveInputLocation(city, input.OriginLat, input.OriginLng)
+		if !ok {
+			return false
+		}
+		input.OriginLat, input.OriginLng = &lat, &lng
+	}
+	if input.Destination != nil || input.DestinationLat != nil || input.DestinationLng != nil {
+		city := current.Destination
+		if input.Destination != nil {
+			city = *input.Destination
+		}
+		lat, lng, ok := resolveInputLocation(city, input.DestinationLat, input.DestinationLng)
+		if !ok {
+			return false
+		}
+		input.DestinationLat, input.DestinationLng = &lat, &lng
+	}
+	return true
+}
+
+func applyLoadCoordinates(input *domain.CreateLoadInput) bool {
+	originLat, originLng, ok := resolveInputLocation(input.Origin, input.OriginLat, input.OriginLng)
+	if !ok {
+		return false
+	}
+	destinationLat, destinationLng, ok := resolveInputLocation(input.Destination, input.DestinationLat, input.DestinationLng)
+	if !ok {
+		return false
+	}
+	input.OriginLat, input.OriginLng = &originLat, &originLng
+	input.DestinationLat, input.DestinationLng = &destinationLat, &destinationLng
+	return true
+}
+
+func applyLoadUpdateCoordinates(input *domain.UpdateLoadInput, current domain.Load) bool {
+	if input.Origin != nil || input.OriginLat != nil || input.OriginLng != nil {
+		city := current.Origin
+		if input.Origin != nil {
+			city = *input.Origin
+		}
+		lat, lng, ok := resolveInputLocation(city, input.OriginLat, input.OriginLng)
+		if !ok {
+			return false
+		}
+		input.OriginLat, input.OriginLng = &lat, &lng
+	}
+	if input.Destination != nil || input.DestinationLat != nil || input.DestinationLng != nil {
+		city := current.Destination
+		if input.Destination != nil {
+			city = *input.Destination
+		}
+		lat, lng, ok := resolveInputLocation(city, input.DestinationLat, input.DestinationLng)
+		if !ok {
+			return false
+		}
+		input.DestinationLat, input.DestinationLng = &lat, &lng
+	}
+	return true
+}
+
+func resolveInputLocation(city string, lat, lng *float64) (float64, float64, bool) {
+	if (lat == nil) != (lng == nil) {
+		return 0, 0, false
+	}
+	if lat != nil {
+		return *lat, *lng, *lat >= -90 && *lat <= 90 && *lng >= -180 && *lng <= 180
+	}
+	location, ok := geocoder.Resolve(city)
+	if !ok {
+		return 0, 0, false
+	}
+	return location.Latitude, location.Longitude, true
 }

@@ -1,13 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, InjectionToken } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { MOCK_OPERATIONAL_METRICS, MOCK_OPPORTUNITIES, MOCK_TRIPS } from '../data/mock-data';
-import { MatchOpportunity, OperationalMetric, Trip } from '../models/kilvia.models';
+import { Observable, map, of, throwError } from 'rxjs';
+import { MOCK_OPPORTUNITIES, MOCK_TRIPS } from '../data/mock-data';
+import { MatchOpportunity, Trip } from '../models/kilvia.models';
 
 export interface OpportunityRepository {
   getMatches(): Observable<readonly MatchOpportunity[]>;
+  getMatch(id: string): Observable<MatchOpportunity>;
   getTrips(): Observable<readonly Trip[]>;
-  getOperationalMetrics(): Observable<readonly OperationalMetric[]>;
 }
 
 export const OPPORTUNITY_REPOSITORY = new InjectionToken<OpportunityRepository>('OPPORTUNITY_REPOSITORY');
@@ -18,13 +18,15 @@ export class MockOpportunityRepository implements OpportunityRepository {
     return of(MOCK_OPPORTUNITIES);
   }
 
+  getMatch(id: string): Observable<MatchOpportunity> {
+    const match = MOCK_OPPORTUNITIES.find((item) => item.id === id);
+    return match ? of(match) : throwError(() => new Error('Match not found'));
+  }
+
   getTrips(): Observable<readonly Trip[]> {
     return of(MOCK_TRIPS);
   }
 
-  getOperationalMetrics(): Observable<readonly OperationalMetric[]> {
-    return of(MOCK_OPERATIONAL_METRICS);
-  }
 }
 
 @Injectable()
@@ -36,11 +38,43 @@ export class ApiOpportunityRepository implements OpportunityRepository {
     return this.http.get<readonly MatchOpportunity[]>(`${this.baseUrl}/matches`);
   }
 
-  getTrips(): Observable<readonly Trip[]> {
-    return this.http.get<readonly Trip[]>(`${this.baseUrl}/trips`);
+  getMatch(id: string): Observable<MatchOpportunity> {
+    return this.http.get<MatchOpportunity>(`${this.baseUrl}/matches/${id}`);
   }
 
-  getOperationalMetrics(): Observable<readonly OperationalMetric[]> {
-    return this.http.get<readonly OperationalMetric[]>(`${this.baseUrl}/operations/summary`);
+  getTrips(): Observable<readonly Trip[]> {
+    return this.http
+      .get<readonly ApiTrip[]>(`${this.baseUrl}/trips`)
+      .pipe(map((trips) => trips.map((trip) => mapTrip(trip))));
   }
+}
+
+interface ApiTrip {
+  readonly id: string;
+  readonly code?: string;
+  readonly origin: string;
+  readonly destination: string;
+  readonly departureAt: string;
+  readonly estimatedArrivalAt: string;
+  readonly vehicleLabel: string;
+  readonly availableWeightTons: number;
+  readonly status: string;
+}
+
+function mapTrip(trip: ApiTrip): Trip {
+  const date = new Date(trip.departureAt);
+  const dateText = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'short' }).format(date);
+  return {
+    id: trip.code ?? trip.id,
+    tripId: trip.id,
+    origin: { city: trip.origin, region: '' },
+    destination: { city: trip.destination, region: '' },
+    date: new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium' }).format(date),
+    dateShort: dateText.replace('.', ''),
+    timeWindow: `${new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit' }).format(date)}–${new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit' }).format(new Date(trip.estimatedArrivalAt))}`,
+    vehicle: trip.vehicleLabel,
+    capacityFreeTons: trip.availableWeightTons,
+    matchCount: 0,
+    status: trip.status === 'PROGRAMADO' || trip.status === 'ACTIVO' ? 'unmatched' : 'pending',
+  };
 }

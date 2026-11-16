@@ -37,11 +37,13 @@ All application endpoints are versioned under `/api/v1`. Authentication endpoint
 - `POST /api/v1/auth/login` authenticates a user.
 - `GET /api/v1/auth/me` returns the authenticated user.
 
-The API also exposes company, user, driver, vehicle, trip, load, and match read endpoints. Protected endpoints require a bearer token. Role permissions and company isolation are enforced by the backend, not only by the Angular route guards.
+The API also exposes company, user, driver, vehicle, trip, load, and match endpoints. Protected endpoints require a bearer token. Role permissions and company isolation are enforced by the backend, not only by the Angular route guards.
+
+The matching engine can use OSRM for road distances and route geometry. Configure `OSRM_BASE_URL` to use another compatible router; if it is unavailable, the backend estimates road distance using a local Haversine-based fallback.
 
 ## Demo data
 
-Opportunities, matches, and the dashboard summary continue to use Sprint 1 demo data. Company, user, driver, vehicle, trip, and load management screens use the API.
+Company, user, driver, vehicle, trip, load, and match views use the API. Matching opportunities are calculated from the trips and loads stored in PostgreSQL. Create an organization, then add vehicles, drivers, trips, and loads to populate the results.
 
 ## Tests and builds
 

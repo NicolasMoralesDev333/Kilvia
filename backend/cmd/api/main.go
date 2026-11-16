@@ -36,7 +36,7 @@ func main() {
 	defer pool.Close()
 
 	repo := repository.NewPostgres(pool)
-	appService := service.New(repo, cfg.JWTSecret, cfg.TokenTTL)
+	appService := service.NewWithRouting(repo, cfg.JWTSecret, cfg.TokenTTL, cfg.OSRMBaseURL)
 	server := &http.Server{
 		Addr:              cfg.HTTPAddr,
 		Handler:           httpapi.New(appService, cfg.FrontendOrigin),

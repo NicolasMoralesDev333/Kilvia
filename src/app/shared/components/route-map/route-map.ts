@@ -13,7 +13,7 @@ import { MatchOpportunity, RouteCoordinate } from '../../../core/models/kilvia.m
         <span><i class="utilized"></i>Tramo aprovechado</span>
         <span><i class="detour"></i>Desvío</span>
       </div>
-      <div class="kilvia-map__demo">Geometría demo<span class="kilvia-map__demo-detail"> · Preparado para OSRM</span></div>
+      <div class="kilvia-map__demo">Ruta calculada<span class="kilvia-map__demo-detail"> · OSRM o estimación local</span></div>
     </section>
   `,
   styles: `
@@ -104,14 +104,19 @@ export class RouteMap implements OnDestroy {
     (this.map.getSource('detour') as GeoJSONSource).setData(this.lineFeature(detour));
 
     this.markers.forEach((marker) => marker.remove());
+    const waypoints = opportunity.route_geometry?.waypoints ?? [];
+    const waypoint = (name: string, fallback: RouteCoordinate): RouteCoordinate =>
+      waypoints.find((item) => item.name === name)?.coordinate ?? fallback;
     this.markers = [
-      this.createMarker(planned[0], 'Origen compartido', opportunity.trip.origin.city, 'origin'),
-      this.createMarker(utilized[utilized.length - 1], 'Destino carga', opportunity.load.destination.city, 'cargo'),
-      this.createMarker(planned[planned.length - 1], 'Fin del viaje', opportunity.trip.destination.city, 'destination'),
+      this.createMarker(waypoint('origen_viaje', planned[0]), 'Origen del viaje', opportunity.trip.origin.city, 'origin'),
+      this.createMarker(waypoint('destino_carga', utilized[utilized.length - 1]), 'Destino de la carga', opportunity.load.destination.city, 'cargo'),
+      this.createMarker(waypoint('destino_viaje', planned[planned.length - 1]), 'Fin del viaje', opportunity.trip.destination.city, 'destination'),
     ];
 
     const bounds = new LngLatBounds();
-    [...planned, ...detour].forEach((coordinate) => bounds.extend([coordinate[0], coordinate[1]]));
+    const route = opportunity.route_geometry?.coordinates ?? [...planned, ...detour];
+    route.forEach((coordinate) => bounds.extend([coordinate[0], coordinate[1]]));
+    waypoints.forEach(({ coordinate }) => bounds.extend([coordinate[0], coordinate[1]]));
     const padding = this.mapHost().nativeElement.clientWidth < 600 ? 56 : 120;
     this.map.fitBounds(bounds, { padding, duration: 0, maxZoom: 7 });
   }

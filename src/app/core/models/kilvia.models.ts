@@ -11,6 +11,7 @@ export interface VehicleCapacity {
 
 export interface Trip {
   readonly id: string;
+  readonly tripId?: string;
   readonly origin: RoutePoint;
   readonly destination: RoutePoint;
   readonly date: string;
@@ -66,6 +67,19 @@ export interface MatchOpportunity {
   readonly metrics: RouteMetrics;
   readonly criteria: readonly MatchCriterion[];
   readonly geometry: RouteGeometry;
+  readonly route_geometry?: MatchRouteGeometry;
+}
+
+export interface MatchRouteWaypoint {
+  readonly name: 'origen_viaje' | 'origen_carga' | 'destino_carga' | 'destino_viaje';
+  readonly label: string;
+  readonly coordinate: RouteCoordinate;
+}
+
+export interface MatchRouteGeometry {
+  readonly coordinates: readonly RouteCoordinate[];
+  readonly waypoints: readonly MatchRouteWaypoint[];
+  readonly source: 'OSRM' | 'FALLBACK';
 }
 
 export interface OperationalMetric {

@@ -8,11 +8,13 @@ import (
 )
 
 const tripSelect = `
-	SELECT v.id_viaje, v.id_usuario_operador, v.id_chofer,
+	SELECT v.id_viaje, v.codigo_viaje, v.id_usuario_operador, v.id_chofer,
 	       concat(cu.nombre, ' ', cu.apellido), v.id_vehiculo,
 	       concat(ve.patente, ' · ', tv.nombre), v.origen, v.destino,
 	       v.fecha_salida, v.fecha_llegada_estimada, v.capacidad_disponible,
-	       v.volumen_disponible, v.estado, v.fecha_registro
+	       v.volumen_disponible, v.estado, v.fecha_registro,
+	       v.lat_origen, v.lng_origen, v.lat_destino, v.lng_destino,
+	       COALESCE(v.distance_base_km, 0)
 	FROM viaje v
 	JOIN usuario op ON op.id_usuario = v.id_usuario_operador
 	JOIN usuario cu ON cu.id_usuario = v.id_chofer
@@ -56,12 +58,14 @@ func (r *Postgres) CreateTrip(ctx context.Context, identity domain.Identity, inp
 	err := r.pool.QueryRow(ctx, `
 		INSERT INTO viaje (
 			id_usuario_operador, id_chofer, id_vehiculo, origen, destino,
-			fecha_salida, fecha_llegada_estimada, capacidad_disponible, volumen_disponible
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			fecha_salida, fecha_llegada_estimada, capacidad_disponible, volumen_disponible,
+			lat_origen, lng_origen, lat_destino, lng_destino
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		RETURNING id_viaje
 	`, identity.UserID, input.DriverID, input.VehicleID, strings.TrimSpace(input.Origin),
 		strings.TrimSpace(input.Destination), input.DepartureAt, input.EstimatedArrivalAt,
 		input.AvailableWeightTons, input.AvailableVolumeM3,
+		input.OriginLat, input.OriginLng, input.DestinationLat, input.DestinationLng,
 	).Scan(&tripID)
 	if err != nil {
 		return domain.Trip{}, normalizeError(err)
@@ -80,7 +84,17 @@ func (r *Postgres) UpdateTrip(ctx context.Context, identity domain.Identity, tri
 		    fecha_llegada_estimada = COALESCE($8, v.fecha_llegada_estimada),
 		    capacidad_disponible = COALESCE($9, v.capacidad_disponible),
 		    volumen_disponible = COALESCE($10, v.volumen_disponible),
-		    estado = COALESCE($11, v.estado)
+		    estado = COALESCE($11, v.estado),
+		    lat_origen = COALESCE($12, v.lat_origen),
+		    lng_origen = COALESCE($13, v.lng_origen),
+		    lat_destino = COALESCE($14, v.lat_destino),
+		    lng_destino = COALESCE($15, v.lng_destino),
+		    distance_base_km = CASE
+		        WHEN $5 IS NOT NULL OR $6 IS NOT NULL OR $12 IS NOT NULL OR
+		             $13 IS NOT NULL OR $14 IS NOT NULL OR $15 IS NOT NULL
+		        THEN NULL
+		        ELSE v.distance_base_km
+		    END
 		WHERE v.id_viaje = $2
 		  AND EXISTS (
 		      SELECT 1 FROM usuario op
@@ -89,6 +103,7 @@ func (r *Postgres) UpdateTrip(ctx context.Context, identity domain.Identity, tri
 	`, identity.CompanyID, tripID, input.DriverID, input.VehicleID, input.Origin,
 		input.Destination, input.DepartureAt, input.EstimatedArrivalAt,
 		input.AvailableWeightTons, input.AvailableVolumeM3, input.Status,
+		input.OriginLat, input.OriginLng, input.DestinationLat, input.DestinationLng,
 	)
 	if err != nil {
 		return domain.Trip{}, normalizeError(err)
@@ -105,16 +120,19 @@ type rowScanner interface {
 
 func scanTrip(row rowScanner, item *domain.Trip) error {
 	return row.Scan(
-		&item.ID, &item.OperatorID, &item.DriverID, &item.DriverName,
+		&item.ID, &item.Code, &item.OperatorID, &item.DriverID, &item.DriverName,
 		&item.VehicleID, &item.VehicleLabel, &item.Origin, &item.Destination,
 		&item.DepartureAt, &item.EstimatedArrivalAt, &item.AvailableWeightTons,
 		&item.AvailableVolumeM3, &item.Status, &item.RegisteredAt,
+		&item.OriginLat, &item.OriginLng, &item.DestinationLat, &item.DestinationLng,
+		&item.BaseDistanceKM,
 	)
 }
 
 const loadSelect = `
-	SELECT c.id_carga, c.id_usuario, c.origen, c.destino, c.fecha, c.tipo_carga,
-	       c.peso, c.volumen, c.vehiculo_requerido, c.restricciones, c.estado, c.fecha_registro
+	SELECT c.id_carga, c.codigo_carga, c.id_usuario, c.origen, c.destino, c.fecha, c.tipo_carga,
+	       c.peso, c.volumen, c.vehiculo_requerido, c.restricciones, c.estado, c.fecha_registro,
+	       c.lat_origen, c.lng_origen, c.lat_destino, c.lng_destino
 	FROM carga c
 	JOIN usuario u ON u.id_usuario = c.id_usuario
 `
@@ -152,12 +170,13 @@ func (r *Postgres) CreateLoad(ctx context.Context, identity domain.Identity, inp
 	err := r.pool.QueryRow(ctx, `
 		INSERT INTO carga (
 			id_usuario, origen, destino, fecha, tipo_carga, peso, volumen,
-			vehiculo_requerido, restricciones
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			vehiculo_requerido, restricciones, lat_origen, lng_origen, lat_destino, lng_destino
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		RETURNING id_carga
 	`, identity.UserID, strings.TrimSpace(input.Origin), strings.TrimSpace(input.Destination),
 		input.PickupAt, strings.TrimSpace(input.CargoType), input.WeightTons,
 		input.VolumeM3, strings.TrimSpace(input.RequiredVehicle), strings.TrimSpace(input.Restrictions),
+		input.OriginLat, input.OriginLng, input.DestinationLat, input.DestinationLng,
 	).Scan(&loadID)
 	if err != nil {
 		return domain.Load{}, normalizeError(err)
@@ -176,7 +195,11 @@ func (r *Postgres) UpdateLoad(ctx context.Context, identity domain.Identity, loa
 		    volumen = COALESCE($8, c.volumen),
 		    vehiculo_requerido = COALESCE($9, c.vehiculo_requerido),
 		    restricciones = COALESCE($10, c.restricciones),
-		    estado = COALESCE($11, c.estado)
+		    estado = COALESCE($11, c.estado),
+		    lat_origen = COALESCE($12, c.lat_origen),
+		    lng_origen = COALESCE($13, c.lng_origen),
+		    lat_destino = COALESCE($14, c.lat_destino),
+		    lng_destino = COALESCE($15, c.lng_destino)
 		WHERE c.id_carga = $2
 		  AND EXISTS (
 		      SELECT 1 FROM usuario u
@@ -184,7 +207,8 @@ func (r *Postgres) UpdateLoad(ctx context.Context, identity domain.Identity, loa
 		  )
 	`, identity.CompanyID, loadID, input.Origin, input.Destination, input.PickupAt,
 		input.CargoType, input.WeightTons, input.VolumeM3, input.RequiredVehicle,
-		input.Restrictions, input.Status,
+		input.Restrictions, input.Status, input.OriginLat, input.OriginLng,
+		input.DestinationLat, input.DestinationLng,
 	)
 	if err != nil {
 		return domain.Load{}, normalizeError(err)
@@ -197,8 +221,9 @@ func (r *Postgres) UpdateLoad(ctx context.Context, identity domain.Identity, loa
 
 func scanLoad(row rowScanner, item *domain.Load) error {
 	return row.Scan(
-		&item.ID, &item.UserID, &item.Origin, &item.Destination, &item.PickupAt,
+		&item.ID, &item.Code, &item.UserID, &item.Origin, &item.Destination, &item.PickupAt,
 		&item.CargoType, &item.WeightTons, &item.VolumeM3, &item.RequiredVehicle,
 		&item.Restrictions, &item.Status, &item.RegisteredAt,
+		&item.OriginLat, &item.OriginLng, &item.DestinationLat, &item.DestinationLng,
 	)
 }

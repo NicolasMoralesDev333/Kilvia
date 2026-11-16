@@ -43,4 +43,12 @@ type Repository interface {
 	GetLoad(context.Context, domain.Identity, string) (domain.Load, error)
 	CreateLoad(context.Context, domain.Identity, domain.CreateLoadInput) (domain.Load, error)
 	UpdateLoad(context.Context, domain.Identity, string, domain.UpdateLoadInput) (domain.Load, error)
+
+	MatchCandidates(context.Context, string) ([]domain.MatchCandidate, error)
+	DeleteProposedMatches(context.Context, string) error
+	UpsertMatch(context.Context, domain.MatchRecord) (string, error)
+	SetTripBaseDistance(context.Context, string, float64) error
+	ListMatches(context.Context, string) ([]domain.MatchItem, error)
+	GetMatch(context.Context, string, string) (domain.MatchItem, error)
+	ListTripMatches(context.Context, string, string) ([]domain.MatchItem, error)
 }

@@ -17,6 +17,8 @@ export class DashboardPage {
   protected readonly featured = this.matchService.featuredOpportunity;
   protected readonly trips = this.matchService.trips;
   protected readonly totalOpportunities = computed(() => this.matchService.opportunities().length);
+  protected readonly loading = this.matchService.loading;
+  protected readonly error = this.matchService.error;
 
   protected tons(value: number): string {
     return value.toFixed(1).replace('.', ',');

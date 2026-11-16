@@ -2,7 +2,7 @@
   <section class="hero">
     <div class="hero__inner">
       <div class="hero__copy">
-        <p class="eyebrow eyebrow--light">Planificación activa <span class="demo-meta">Datos demo</span></p>
+        <p class="eyebrow eyebrow--light">Planificación activa</p>
         <h1>Tus viajes tienen kilómetros por aprovechar.</h1>
         <p>Kilvia encuentra cargas compatibles con las rutas que ya tenés programadas.</p>
         <div class="hero__actions">
@@ -43,6 +43,8 @@
   </section>
 
   <main class="workspace">
+    @if (loading()) { <p role="status">Cargando planificación…</p> }
+    @if (error()) { <p role="alert">{{ error() }}</p> }
     @if (featured(); as opportunity) {
       <section aria-labelledby="featured-title">
         <header class="section-heading">
@@ -91,6 +93,8 @@
               @else { Sin match todavía }
             </p>
           </article>
+        } @empty {
+              <p>No hay viajes programados.</p>
         }
       </div>
     </section>

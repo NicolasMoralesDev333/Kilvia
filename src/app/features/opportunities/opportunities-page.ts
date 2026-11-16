@@ -14,6 +14,11 @@ import { MatchScore } from '../../shared/components/match-score/match-score';
 export class OpportunitiesPage {
   private readonly matchService = inject(MatchService);
   protected readonly opportunities = this.matchService.opportunities;
+  protected readonly loading = this.matchService.loading;
+  protected readonly error = this.matchService.error;
+  protected recalculate(): void {
+    this.matchService.recalculate();
+  }
 
   protected tons(value: number): string {
     return value.toFixed(1).replace('.', ',');
